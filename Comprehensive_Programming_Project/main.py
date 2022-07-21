@@ -1,27 +1,21 @@
-
-# This is the main function, which will initilize your estimator, and run it using data loaded from a text file. 
-#
-
 import numpy as np
 import matplotlib.pyplot as plt
 from estRun import estRun
 from estInitialize import estInitialize
-#provide the index of the experimental run you would like to use.
-# Note that using "0" means that you will load the measurement calibration data.
+
+# the index of the experimental run
 experimentalRun = 1
 
 print('Loading the data file #', experimentalRun)
 experimentalData = np.genfromtxt ('data/run_{0:03d}.csv'.format(experimentalRun), delimiter=',')
 
-#===============================================================================
-# Here, we run your estimator's initialization
-#===============================================================================
+# initialization
 print('Running the initialization')
-internalState, studentNames, estimatorType = estInitialize()
+internalState = estInitialize()
 
 numDataPoints = experimentalData.shape[0]
 
-#Here we will store the estimated position and orientation, for later plotting:
+# store the estimated position and orientation, for later plotting:
 estimatedPosition_x = np.zeros([numDataPoints,])
 estimatedPosition_y = np.zeros([numDataPoints,])
 estimatedAngle = np.zeros([numDataPoints,])
@@ -29,14 +23,13 @@ estimatedAngle = np.zeros([numDataPoints,])
 print('Running the system')
 dt = experimentalData[1,0] - experimentalData[0,0]
 for k in range(numDataPoints):
-    t = experimentalData[k,0]
     gamma = experimentalData[k,1]
     omega = experimentalData[k,2]
     measx = experimentalData[k,3]
     measy = experimentalData[k,4]
 
     #run the estimator:
-    x, y, theta, internalState = estRun(t, dt, internalState, gamma, omega, (measx, measy))
+    x, y, theta, internalState = estRun(dt, internalState, gamma, omega, (measx, measy))
 
     #keep track:
     estimatedPosition_x[k] = x
@@ -57,25 +50,7 @@ print('   pos x =',posErr_x[-1],'m')
 print('   pos y =',posErr_y[-1],'m')
 print('   angle =',angErr[-1],'rad')
 
-ax = np.sum(np.abs(posErr_x))/numDataPoints
-ay = np.sum(np.abs(posErr_y))/numDataPoints
-ath = np.sum(np.abs(angErr))/numDataPoints
-score = ax + ay + ath
-if not np.isnan(score):
-    #this is for evaluation by the instructors
-    print('average error:')
-
-    print('   pos x =', ax, 'm')
-    print('   pos y =', ay, 'm')
-    print('   angle =', ath, 'rad')
-
-    #our scalar score. 
-    print('average score:',score)
-
-#===============================================================================
-# make some plots:
-#===============================================================================
-#feel free to add additional plots, if you like.
+# plots:
 print('Generating plots')
 
 figTopView, axTopView = plt.subplots(1, 1)
